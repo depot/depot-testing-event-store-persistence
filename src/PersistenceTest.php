@@ -1,15 +1,15 @@
 <?php
 
-namespace Monii\AggregateEventStorage\EventStore\Persistence;
+namespace Depot\Testing\EventStore\Persistence;
 
-use Monii\AggregateEventStorage\Contract\ContractResolver;
-use Monii\AggregateEventStorage\Contract\SimplePhpFqcnContractResolver;
-use Monii\AggregateEventStorage\EventStore\EventEnvelope;
-use Monii\AggregateEventStorage\EventStore\Transaction\CommitId;
-use Monii\AggregateEventStorage\Fixtures\Banking\Account\Account;
-use Monii\AggregateEventStorage\Fixtures\Banking\Account\AccountBalanceDecreased;
-use Monii\AggregateEventStorage\Fixtures\Banking\Account\AccountBalanceIncreased;
-use Monii\AggregateEventStorage\Fixtures\Banking\Account\AccountWasOpened;
+use Depot\Contract\ContractResolver;
+use Depot\Contract\SimplePhpFqcnContractResolver;
+use Depot\EventStore\EventEnvelope;
+use Depot\EventStore\Transaction\CommitId;
+use Depot\Testing\Fixtures\Banking\Account\Account;
+use Depot\Testing\Fixtures\Banking\Account\AccountBalanceDecreased;
+use Depot\Testing\Fixtures\Banking\Account\AccountBalanceIncreased;
+use Depot\Testing\Fixtures\Banking\Account\AccountWasOpened;
 use PHPUnit_Framework_TestCase as TestCase;
 
 abstract class PersistenceTest extends TestCase
