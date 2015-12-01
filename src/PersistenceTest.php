@@ -5,6 +5,7 @@ namespace Depot\Testing\EventStore\Persistence;
 use Depot\Contract\ContractResolver;
 use Depot\Contract\SimplePhpFqcnContractResolver;
 use Depot\EventStore\EventEnvelope;
+use Depot\EventStore\Persistence\Persistence;
 use Depot\EventStore\Transaction\CommitId;
 use Depot\Testing\Fixtures\Banking\Account\Account;
 use Depot\Testing\Fixtures\Banking\Account\AccountBalanceDecreased;
