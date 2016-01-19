@@ -54,9 +54,11 @@ abstract class PersistenceTest extends TestCase
      */
     abstract protected function getPersistence();
 
-    protected function createEventEnvelope($eventId, $event, $version)
+    protected function createEventEnvelope($aggregateRootType, $aggregateRootId, $eventId, $event, $version)
     {
         return new EventEnvelope(
+            $aggregateRootType,
+            $aggregateRootId,
             $this->getContractResolver()->resolveFromObject($event),
             $eventId,
             $event,
@@ -68,16 +70,16 @@ abstract class PersistenceTest extends TestCase
     protected function createCommit(
         Persistence $persistence,
         $commitId,
-        $aggregateClassName,
-        $aggregateId,
-        $expectedAggregateVersion,
+        $aggregateRootClassName,
+        $aggregateRootId,
+        $expectedAggregateRootVersion,
         array $eventEnvelopes
     ) {
         $persistence->commit(
             CommitId::fromString($commitId),
-            $this->getContractResolver()->resolveFromClassName($aggregateClassName),
-            $aggregateId,
-            $expectedAggregateVersion,
+            $this->getContractResolver()->resolveFromClassName($aggregateRootClassName),
+            $aggregateRootId,
+            $expectedAggregateRootVersion,
             $eventEnvelopes
         );
     }
@@ -89,14 +91,21 @@ abstract class PersistenceTest extends TestCase
 
     protected function doLoadFixtures(Persistence $persistence)
     {
+        $aggregateRootClassName = Account::class;
+        $aggregateRootType = $this->getContractResolver()->resolveFromClassName($aggregateRootClassName);
+        $aggregateRootId = 'fixture-account-000';
+        $secondAggregateRootId = 'fixture-account-001';
+
         $this->createCommit(
             $persistence,
             '4A9F269C-27D5-46C2-9FDF-F7A7D61C55D4',
-            Account::class,
-            'fixture-account-000',
+            $aggregateRootClassName,
+            $aggregateRootId,
             -1,
             [
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $aggregateRootId,
                     123,
                     new AccountWasOpened('fixture-account-000', 25),
                     0
@@ -107,26 +116,34 @@ abstract class PersistenceTest extends TestCase
         $this->createCommit(
             $persistence,
             '75BCD437-F184-4305-AB61-784761536783',
-            Account::class,
-            'fixture-account-001',
+            $aggregateRootClassName,
+            $secondAggregateRootId,
             -1,
             [
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     124,
                     new AccountWasOpened('fixture-account-001', 10),
                     0
                 ),
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     125,
                     new AccountBalanceIncreased('fixture-account-001', 15),
                     1
                 ),
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     126,
                     new AccountBalanceDecreased('fixture-account-001', 5),
                     2
                 ),
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     127,
                     new AccountBalanceIncreased('fixture-account-001', 45),
                     3
@@ -137,11 +154,13 @@ abstract class PersistenceTest extends TestCase
         $this->createCommit(
             $persistence,
             '1264416A-7465-4241-A810-B5EFBD1988E2',
-            Account::class,
-            'fixture-account-000',
+            $aggregateRootClassName,
+            $aggregateRootId,
             0,
             [
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $aggregateRootId,
                     128,
                     new AccountBalanceIncreased('fixture-account-000', 30),
                     1
@@ -152,16 +171,20 @@ abstract class PersistenceTest extends TestCase
         $this->createCommit(
             $persistence,
             'D68A5BFD-6A61-44A7-BF10-ECEFE776A141',
-            Account::class,
-            'fixture-account-001',
+            $aggregateRootClassName,
+            $secondAggregateRootId,
             3,
             [
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     129,
                     new AccountBalanceDecreased('fixture-account-001', 75),
                     4
                 ),
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     130,
                     new AccountBalanceIncreased('fixture-account-001', 90),
                     5
@@ -172,16 +195,20 @@ abstract class PersistenceTest extends TestCase
         $this->createCommit(
             $persistence,
             'A8DA72AB-1405-463A-AF16-BF170A5D304E',
-            Account::class,
-            'fixture-account-001',
+            $aggregateRootClassName,
+            $secondAggregateRootId,
             5,
             [
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     131,
                     new AccountBalanceIncreased('fixture-account-001', 125),
                     6
                 ),
                 $this->createEventEnvelope(
+                    $aggregateRootType,
+                    $secondAggregateRootId,
                     132,
                     new AccountBalanceDecreased('fixture-account-001', 15),
                     7
@@ -191,18 +218,18 @@ abstract class PersistenceTest extends TestCase
     }
 
     /**
-     * @param $aggregateClassName
-     * @param $aggregateId
+     * @param $aggregateRootClassName
+     * @param $aggregateRootId
      * @param $expectedEventEnvelopes
      * @dataProvider provideFetchData
      */
-    public function testFetch($aggregateClassName, $aggregateId, $expectedEventEnvelopes)
+    public function testFetch($aggregateRootClassName, $aggregateRootId, $expectedEventEnvelopes)
     {
         $this->loadFixtures();
 
         $actualEventEnvelopes = $this->getPersistence()->fetch(
-            $this->getContractResolver()->resolveFromClassName($aggregateClassName),
-            $aggregateId
+            $this->getContractResolver()->resolveFromClassName($aggregateRootClassName),
+            $aggregateRootId
         );
 
         $this->assertEquals($expectedEventEnvelopes, $actualEventEnvelopes);
@@ -210,17 +237,26 @@ abstract class PersistenceTest extends TestCase
 
     public function provideFetchData()
     {
+        $aggregateRootClassName = Account::class;
+        $aggregateRootType = $this->getContractResolver()->resolveFromClassName($aggregateRootClassName);
+        $aggregateRootId = 'fixture-account-000';
+        $secondAggregateRootId = 'fixture-account-001';
+
         return [
             [
-                Account::class,
-                'fixture-account-000',
+                $aggregateRootClassName,
+                $aggregateRootId,
                 [
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $aggregateRootId,
                         123,
                         new AccountWasOpened('fixture-account-000', 25),
                         0
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $aggregateRootId,
                         128,
                         new AccountBalanceIncreased('fixture-account-000', 30),
                         1
@@ -228,45 +264,61 @@ abstract class PersistenceTest extends TestCase
                 ],
             ],
             [
-                Account::class,
-                'fixture-account-001',
+                $aggregateRootClassName,
+                $secondAggregateRootId,
                 [
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         124,
                         new AccountWasOpened('fixture-account-001', 10),
                         0
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         125,
                         new AccountBalanceIncreased('fixture-account-001', 15),
                         1
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         126,
                         new AccountBalanceDecreased('fixture-account-001', 5),
                         2
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         127,
                         new AccountBalanceIncreased('fixture-account-001', 45),
                         3
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         129,
                         new AccountBalanceDecreased('fixture-account-001', 75),
                         4
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         130,
                         new AccountBalanceIncreased('fixture-account-001', 90),
                         5
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         131,
                         new AccountBalanceIncreased('fixture-account-001', 125),
                         6
                     ),
                     $this->createEventEnvelope(
+                        $aggregateRootType,
+                        $secondAggregateRootId,
                         132,
                         new AccountBalanceDecreased('fixture-account-001', 15),
                         7
