@@ -48,12 +48,13 @@ abstract class EventStoreManagementTest extends TestCase
     {
         $eventVisitor = new RecordingCommittedEventVisitor();
         $this->persistence->visitCommittedEvents($criteria, $eventVisitor);
+
         return $eventVisitor->getVisitedEvents();
     }
 
     private function getContractResolver()
     {
-        if (! is_null($this->contractResolver)) {
+        if (!is_null($this->contractResolver)) {
             return $this->contractResolver;
         }
 
@@ -70,7 +71,6 @@ abstract class EventStoreManagementTest extends TestCase
      */
     abstract protected function getPersistence();
 
-
     public function testItVisitsAllCommittedEvents()
     {
         $visitedEvents = $this->visitCommittedEvents(Criteria::create());
@@ -86,18 +86,18 @@ abstract class EventStoreManagementTest extends TestCase
         ]));
 
         $this->assertVisitedEventsAreEquals([
-            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
-            $this->createCommittedEvent(2,  'a',   1, 1, new Middle('a')),
-            $this->createCommittedEvent(2,  'a',   1, 2, new Middle('b')),
-            $this->createCommittedEvent(8,  'a',   1, 3, new Middle('c')),
-            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
-            $this->createCommittedEvent(9,  'a',   3, 1, new Middle('a')),
-            $this->createCommittedEvent(9,  'a',   3, 2, new Middle('b')),
-            $this->createCommittedEvent(10, 'a',   3, 3, new Middle('c')),
-            $this->createCommittedEvent(11, 'a',   1, 4, new Middle('d')),
-            $this->createCommittedEvent(14, 'a',   3, 4, new Middle('d')),
-            $this->createCommittedEvent(15, 'a',   1, 5, new End()),
-            $this->createCommittedEvent(16, 'a',   3, 5, new End()),
+            $this->createCommittedEvent(1, 'a', 1, 0, new Start()),
+            $this->createCommittedEvent(2, 'a', 1, 1, new Middle('a')),
+            $this->createCommittedEvent(2, 'a', 1, 2, new Middle('b')),
+            $this->createCommittedEvent(8, 'a', 1, 3, new Middle('c')),
+            $this->createCommittedEvent(9, 'a', 3, 0, new Start()),
+            $this->createCommittedEvent(9, 'a', 3, 1, new Middle('a')),
+            $this->createCommittedEvent(9, 'a', 3, 2, new Middle('b')),
+            $this->createCommittedEvent(10, 'a', 3, 3, new Middle('c')),
+            $this->createCommittedEvent(11, 'a', 1, 4, new Middle('d')),
+            $this->createCommittedEvent(14, 'a', 3, 4, new Middle('d')),
+            $this->createCommittedEvent(15, 'a', 1, 5, new End()),
+            $this->createCommittedEvent(16, 'a', 3, 5, new End()),
         ], $visitedEvents);
     }
 
@@ -106,19 +106,19 @@ abstract class EventStoreManagementTest extends TestCase
         $visitedEvents = $this->visitCommittedEvents(Criteria::create()
             ->withEventTypes([
                 $this->contractResolver->resolveFromClassName(Start::class),
-                $this->contractResolver->resolveFromClassName(End::class)
+                $this->contractResolver->resolveFromClassName(End::class),
             ])
         );
 
         $this->assertVisitedEventsAreEquals([
-            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
-            $this->createCommittedEvent(3,  'a',   2, 0, new Start()),
-            $this->createCommittedEvent(7,  'a',   2, 5, new End()),
-            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
-            $this->createCommittedEvent(12, 'b',   4, 0, new Start()),
-            $this->createCommittedEvent(13, 'b',   4, 5, new End()),
-            $this->createCommittedEvent(15, 'a',   1, 5, new End()),
-            $this->createCommittedEvent(16, 'a',   3, 5, new End()),
+            $this->createCommittedEvent(1, 'a', 1, 0, new Start()),
+            $this->createCommittedEvent(3, 'a', 2, 0, new Start()),
+            $this->createCommittedEvent(7, 'a', 2, 5, new End()),
+            $this->createCommittedEvent(9, 'a', 3, 0, new Start()),
+            $this->createCommittedEvent(12, 'b', 4, 0, new Start()),
+            $this->createCommittedEvent(13, 'b', 4, 5, new End()),
+            $this->createCommittedEvent(15, 'a', 1, 5, new End()),
+            $this->createCommittedEvent(16, 'a', 3, 5, new End()),
         ], $visitedEvents);
     }
 
@@ -126,29 +126,29 @@ abstract class EventStoreManagementTest extends TestCase
     {
         $visitedEvents = $this->visitCommittedEvents(Criteria::create()
             ->withAggregateRootTypes([
-                new Contract('test.A', 'test\A')
+                new Contract('test.A', 'test\A'),
             ])
         );
 
         $this->assertVisitedEventsAreEquals([
-            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
-            $this->createCommittedEvent(2,  'a',   1, 1, new Middle('a')),
-            $this->createCommittedEvent(2,  'a',   1, 2, new Middle('b')),
-            $this->createCommittedEvent(3,  'a',   2, 0, new Start()),
-            $this->createCommittedEvent(4,  'a',   2, 1, new Middle('a')),
-            $this->createCommittedEvent(5,  'a',   2, 2, new Middle('b')),
-            $this->createCommittedEvent(5,  'a',   2, 3, new Middle('c')),
-            $this->createCommittedEvent(6,  'a',   2, 4, new Middle('d')),
-            $this->createCommittedEvent(7,  'a',   2, 5, new End()),
-            $this->createCommittedEvent(8,  'a',   1, 3, new Middle('c')),
-            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
-            $this->createCommittedEvent(9,  'a',   3, 1, new Middle('a')),
-            $this->createCommittedEvent(9,  'a',   3, 2, new Middle('b')),
-            $this->createCommittedEvent(10, 'a',   3, 3, new Middle('c')),
-            $this->createCommittedEvent(11, 'a',   1, 4, new Middle('d')),
-            $this->createCommittedEvent(14, 'a',   3, 4, new Middle('d')),
-            $this->createCommittedEvent(15, 'a',   1, 5, new End()),
-            $this->createCommittedEvent(16, 'a',   3, 5, new End()),
+            $this->createCommittedEvent(1, 'a', 1, 0, new Start()),
+            $this->createCommittedEvent(2, 'a', 1, 1, new Middle('a')),
+            $this->createCommittedEvent(2, 'a', 1, 2, new Middle('b')),
+            $this->createCommittedEvent(3, 'a', 2, 0, new Start()),
+            $this->createCommittedEvent(4, 'a', 2, 1, new Middle('a')),
+            $this->createCommittedEvent(5, 'a', 2, 2, new Middle('b')),
+            $this->createCommittedEvent(5, 'a', 2, 3, new Middle('c')),
+            $this->createCommittedEvent(6, 'a', 2, 4, new Middle('d')),
+            $this->createCommittedEvent(7, 'a', 2, 5, new End()),
+            $this->createCommittedEvent(8, 'a', 1, 3, new Middle('c')),
+            $this->createCommittedEvent(9, 'a', 3, 0, new Start()),
+            $this->createCommittedEvent(9, 'a', 3, 1, new Middle('a')),
+            $this->createCommittedEvent(9, 'a', 3, 2, new Middle('b')),
+            $this->createCommittedEvent(10, 'a', 3, 3, new Middle('c')),
+            $this->createCommittedEvent(11, 'a', 1, 4, new Middle('d')),
+            $this->createCommittedEvent(14, 'a', 3, 4, new Middle('d')),
+            $this->createCommittedEvent(15, 'a', 1, 5, new End()),
+            $this->createCommittedEvent(16, 'a', 3, 5, new End()),
         ], $visitedEvents);
     }
 
@@ -156,47 +156,47 @@ abstract class EventStoreManagementTest extends TestCase
     {
         $visitedEvents = $this->visitCommittedEvents(Criteria::create()
             ->withAggregateRootTypes([
-                new Contract('test.A', 'test\A')
+                new Contract('test.A', 'test\A'),
             ])
             ->withEventTypes([
-                $this->contractResolver->resolveFromClassName(Start::class)
+                $this->contractResolver->resolveFromClassName(Start::class),
             ])
         );
 
         $this->assertVisitedEventsAreEquals([
-            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
-            $this->createCommittedEvent(3,  'a',   2, 0, new Start()),
-            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
+            $this->createCommittedEvent(1, 'a', 1, 0, new Start()),
+            $this->createCommittedEvent(3, 'a', 2, 0, new Start()),
+            $this->createCommittedEvent(9, 'a', 3, 0, new Start()),
         ], $visitedEvents);
     }
 
     protected function getCommittedEventFixtures()
     {
         return [
-            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
-            $this->createCommittedEvent(2,  'a',   1, 1, new Middle('a')),
-            $this->createCommittedEvent(2,  'a',   1, 2, new Middle('b')),
-            $this->createCommittedEvent(3,  'a',   2, 0, new Start()),
-            $this->createCommittedEvent(4,  'a',   2, 1, new Middle('a')),
-            $this->createCommittedEvent(5,  'a',   2, 2, new Middle('b')),
-            $this->createCommittedEvent(5,  'a',   2, 3, new Middle('c')),
-            $this->createCommittedEvent(6,  'a',   2, 4, new Middle('d')),
-            $this->createCommittedEvent(7,  'a',   2, 5, new End()),
-            $this->createCommittedEvent(8,  'a',   1, 3, new Middle('c')),
-            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
-            $this->createCommittedEvent(9,  'a',   3, 1, new Middle('a')),
-            $this->createCommittedEvent(9,  'a',   3, 2, new Middle('b')),
-            $this->createCommittedEvent(10, 'a',   3, 3, new Middle('c')),
-            $this->createCommittedEvent(11, 'a',   1, 4, new Middle('d')),
-            $this->createCommittedEvent(12, 'b',   4, 0, new Start()),
-            $this->createCommittedEvent(13, 'b',   4, 1, new Middle('a')),
-            $this->createCommittedEvent(13, 'b',   4, 2, new Middle('b')),
-            $this->createCommittedEvent(13, 'b',   4, 3, new Middle('c')),
-            $this->createCommittedEvent(13, 'b',   4, 4, new Middle('d')),
-            $this->createCommittedEvent(13, 'b',   4, 5, new End()),
-            $this->createCommittedEvent(14, 'a',   3, 4, new Middle('d')),
-            $this->createCommittedEvent(15, 'a',   1, 5, new End()),
-            $this->createCommittedEvent(16, 'a',   3, 5, new End()),
+            $this->createCommittedEvent(1, 'a', 1, 0, new Start()),
+            $this->createCommittedEvent(2, 'a', 1, 1, new Middle('a')),
+            $this->createCommittedEvent(2, 'a', 1, 2, new Middle('b')),
+            $this->createCommittedEvent(3, 'a', 2, 0, new Start()),
+            $this->createCommittedEvent(4, 'a', 2, 1, new Middle('a')),
+            $this->createCommittedEvent(5, 'a', 2, 2, new Middle('b')),
+            $this->createCommittedEvent(5, 'a', 2, 3, new Middle('c')),
+            $this->createCommittedEvent(6, 'a', 2, 4, new Middle('d')),
+            $this->createCommittedEvent(7, 'a', 2, 5, new End()),
+            $this->createCommittedEvent(8, 'a', 1, 3, new Middle('c')),
+            $this->createCommittedEvent(9, 'a', 3, 0, new Start()),
+            $this->createCommittedEvent(9, 'a', 3, 1, new Middle('a')),
+            $this->createCommittedEvent(9, 'a', 3, 2, new Middle('b')),
+            $this->createCommittedEvent(10, 'a', 3, 3, new Middle('c')),
+            $this->createCommittedEvent(11, 'a', 1, 4, new Middle('d')),
+            $this->createCommittedEvent(12, 'b', 4, 0, new Start()),
+            $this->createCommittedEvent(13, 'b', 4, 1, new Middle('a')),
+            $this->createCommittedEvent(13, 'b', 4, 2, new Middle('b')),
+            $this->createCommittedEvent(13, 'b', 4, 3, new Middle('c')),
+            $this->createCommittedEvent(13, 'b', 4, 4, new Middle('d')),
+            $this->createCommittedEvent(13, 'b', 4, 5, new End()),
+            $this->createCommittedEvent(14, 'a', 3, 4, new Middle('d')),
+            $this->createCommittedEvent(15, 'a', 1, 5, new End()),
+            $this->createCommittedEvent(16, 'a', 3, 5, new End()),
         ];
     }
 
@@ -210,17 +210,17 @@ abstract class EventStoreManagementTest extends TestCase
 
     private function groupEventsByAggregateTypeAndId(array $committedEvents)
     {
-        /** @var CommittedEvent $committedEvent */
+        /* @var CommittedEvent $committedEvent */
         $committedEventsByAggregateTypeAndId = [];
         foreach ($committedEvents as $committedEvent) {
             $type = (string) $committedEvent->getAggregateRootType();
             $id = (string) $committedEvent->getAggregateRootId();
 
-            if (! array_key_exists($type, $committedEventsByAggregateTypeAndId)) {
+            if (!array_key_exists($type, $committedEventsByAggregateTypeAndId)) {
                 $committedEventsByAggregateTypeAndId[$type] = [];
             }
 
-            if (! array_key_exists($id, $committedEventsByAggregateTypeAndId[$type])) {
+            if (!array_key_exists($id, $committedEventsByAggregateTypeAndId[$type])) {
                 $committedEventsByAggregateTypeAndId[$type][$id] = [];
             }
 
@@ -230,12 +230,13 @@ abstract class EventStoreManagementTest extends TestCase
         return $committedEventsByAggregateTypeAndId;
     }
 
-
-    protected function getUuid($id) {
+    protected function getUuid($id)
+    {
         return sprintf('%08d-%04d-4%03d-%04d-%012d', $id, $id, $id, $id, $id);
     }
 
-    protected function getCommitId($commitId) {
+    protected function getCommitId($commitId)
+    {
         return sprintf('commit%03d', $commitId);
     }
 
@@ -245,6 +246,7 @@ abstract class EventStoreManagementTest extends TestCase
      * @param $aggregateRootId
      * @param $eventVersion
      * @param $event
+     *
      * @return CommittedEvent
      */
     protected function createCommittedEvent(
@@ -303,7 +305,7 @@ abstract class EventStoreManagementTest extends TestCase
 class RecordingCommittedEventVisitor implements CommittedEventVisitor
 {
     /**
-     * @var $committedEvent[]
+     * @var[]
      */
     private $visitedEvents = [];
 
@@ -311,10 +313,12 @@ class RecordingCommittedEventVisitor implements CommittedEventVisitor
     {
         $this->visitedEvents[] = $committedEvent;
     }
+
     public function getVisitedEvents()
     {
         return $this->visitedEvents;
     }
+
     public function clearVisitedEvents()
     {
         $this->visitedEvents = [];
@@ -330,7 +334,7 @@ class Event
 
     public function serialize()
     {
-        return array();
+        return [];
     }
 }
 
@@ -344,6 +348,7 @@ class Middle extends Event
      * @var string
      */
     public $position;
+
     public function __construct($position)
     {
         $this->position = $position;
@@ -356,9 +361,9 @@ class Middle extends Event
 
     public function serialize()
     {
-        return array(
+        return [
             'position' => $this->position,
-        );
+        ];
     }
 }
 
