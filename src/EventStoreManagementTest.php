@@ -340,6 +340,9 @@ class Start extends Event
 
 class Middle extends Event
 {
+    /**
+     * @var string
+     */
     public $position;
     public function __construct($position)
     {
