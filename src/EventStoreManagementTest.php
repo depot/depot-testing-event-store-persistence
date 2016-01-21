@@ -122,6 +122,54 @@ abstract class EventStoreManagementTest extends TestCase
         ], $visitedEvents);
     }
 
+    public function testItVisitsAggregateRootTypes()
+    {
+        $visitedEvents = $this->visitCommittedEvents(Criteria::create()
+            ->withAggregateRootTypes([
+                new Contract('test.A', 'test\A')
+            ])
+        );
+
+        $this->assertVisitedEventsAreEquals([
+            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
+            $this->createCommittedEvent(2,  'a',   1, 1, new Middle('a')),
+            $this->createCommittedEvent(2,  'a',   1, 2, new Middle('b')),
+            $this->createCommittedEvent(3,  'a',   2, 0, new Start()),
+            $this->createCommittedEvent(4,  'a',   2, 1, new Middle('a')),
+            $this->createCommittedEvent(5,  'a',   2, 2, new Middle('b')),
+            $this->createCommittedEvent(5,  'a',   2, 3, new Middle('c')),
+            $this->createCommittedEvent(6,  'a',   2, 4, new Middle('d')),
+            $this->createCommittedEvent(7,  'a',   2, 5, new End()),
+            $this->createCommittedEvent(8,  'a',   1, 3, new Middle('c')),
+            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
+            $this->createCommittedEvent(9,  'a',   3, 1, new Middle('a')),
+            $this->createCommittedEvent(9,  'a',   3, 2, new Middle('b')),
+            $this->createCommittedEvent(10, 'a',   3, 3, new Middle('c')),
+            $this->createCommittedEvent(11, 'a',   1, 4, new Middle('d')),
+            $this->createCommittedEvent(14, 'a',   3, 4, new Middle('d')),
+            $this->createCommittedEvent(15, 'a',   1, 5, new End()),
+            $this->createCommittedEvent(16, 'a',   3, 5, new End()),
+        ], $visitedEvents);
+    }
+
+    public function testItVisitsAggregateRootTypesAndEventTypes()
+    {
+        $visitedEvents = $this->visitCommittedEvents(Criteria::create()
+            ->withAggregateRootTypes([
+                new Contract('test.A', 'test\A')
+            ])
+            ->withEventTypes([
+                $this->contractResolver->resolveFromClassName(Start::class)
+            ])
+        );
+
+        $this->assertVisitedEventsAreEquals([
+            $this->createCommittedEvent(1,  'a',   1, 0, new Start()),
+            $this->createCommittedEvent(3,  'a',   2, 0, new Start()),
+            $this->createCommittedEvent(9,  'a',   3, 0, new Start()),
+        ], $visitedEvents);
+    }
+
     protected function getCommittedEventFixtures()
     {
         return [
