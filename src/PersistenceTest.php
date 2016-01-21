@@ -29,7 +29,7 @@ abstract class PersistenceTest extends TestCase
 
     private function getContractResolver()
     {
-        if (! is_null($this->contractResolver)) {
+        if (!is_null($this->contractResolver)) {
             return $this->contractResolver;
         }
 
